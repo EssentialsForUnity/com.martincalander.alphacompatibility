@@ -1,0 +1,20 @@
+{
+  "name": "com.martincalander.alphacompatibility",
+  "version": "0.1.0",
+  "displayName": "Alpha Compatibility",
+  "description": "Version-scoped Editor workarounds for Unity alpha releases, with a maintained record of affected versions, verification, and removal conditions.",
+  "unity": "7000.0",
+  "license": "Proprietary License",
+  "author": {
+    "name": "Martin Calander",
+    "url": "https://github.com/martincalander"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EssentialsForUnity/com.martincalander.alphacompatibility.git"
+  },
+  "documentationUrl": "https://github.com/EssentialsForUnity/com.martincalander.alphacompatibility/blob/main/README.md",
+  "changelogUrl": "https://github.com/EssentialsForUnity/com.martincalander.alphacompatibility/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/EssentialsForUnity/com.martincalander.alphacompatibility/blob/main/LICENSE.md",
+  "keywords": ["unity", "alpha", "compatibility", "editor"]
+}

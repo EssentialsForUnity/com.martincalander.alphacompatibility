@@ -1,0 +1,34 @@
+{
+    "name": "MartinCalander.AlphaCompatibility.Editor.Pipeline",
+    "rootNamespace": "MartinCalander.AlphaCompatibility.Editor",
+    "references": [
+        "Unity.Pipeline",
+        "Unity.Pipeline.Attributes"
+    ],
+    "includePlatforms": ["Editor"],
+    "overrideReferences": true,
+    "precompiledReferences": ["GitSubmoduleManager.Harmony.dll"],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "ALPHA_COMPATIBILITY_PIPELINE_0_9",
+        "ALPHA_COMPATIBILITY_SRP_CORE_17_7",
+        "ALPHA_COMPATIBILITY_HARMONY_PROVIDER"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.pipeline",
+            "expression": "[0.9.0-exp.1]",
+            "define": "ALPHA_COMPATIBILITY_PIPELINE_0_9"
+        },
+        {
+            "name": "com.unity.render-pipelines.core",
+            "expression": "[17.7.0]",
+            "define": "ALPHA_COMPATIBILITY_SRP_CORE_17_7"
+        },
+        {
+            "name": "com.martincalander.gitsubmodulemanager",
+            "expression": "0.8.1",
+            "define": "ALPHA_COMPATIBILITY_HARMONY_PROVIDER"
+        }
+    ]
+}

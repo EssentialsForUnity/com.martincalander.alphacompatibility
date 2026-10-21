@@ -1,0 +1,8 @@
+.DS_Store
+*.csproj
+*.sln
+*.slnx
+*.user
+*.tgz
+obj/
+bin/
