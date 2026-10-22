@@ -1,0 +1,35 @@
+{
+  "id": "urp-rendering-lifecycle-17.7.0",
+  "package": {
+    "name": "com.unity.render-pipelines.universal",
+    "version": "17.7.0"
+  },
+  "unityVersionPrefix": "7000.",
+  "files": [
+    {
+      "path": "Runtime/RenderingUtils.cs",
+      "originalSha256": "4dd89af0da76cae92e42bf14de7fa803684c88eba0a87ea228464e0954b1b8d1",
+      "patchedSha256": "134e31b9ccfae357aae11b318e32b5556198f3c63914a6f74bebcd2cd5e5237a",
+      "alreadyPatchedSha256": [
+        "61cef245e424bd28e9a425941d500e2e87186ab06f2604f4fca2f1f0bf50d553"
+      ],
+      "edits": [
+        {
+          "startByte": 479,
+          "deleteBytes": 0,
+          "insert": "partial "
+        },
+        {
+          "startByte": 1124,
+          "deleteBytes": 147,
+          "insert": "        [OnEnteringPlayMode]\n        [OnExitingPlayMode]\n        [Unity.Scripting.LifecycleManagement.OnCodeUnloading]\n        static void ReleaseCachedResources()\n"
+        },
+        {
+          "startByte": 1461,
+          "deleteBytes": 7,
+          "insert": ""
+        }
+      ]
+    }
+  ]
+}

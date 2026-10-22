@@ -6,3 +6,7 @@
 *.tgz
 obj/
 bin/
+!Tools~/
+!SourcePatches~/
+__pycache__/
+*.pyc

@@ -1,0 +1,159 @@
+{
+  "id": "pipeline-lifecycle-0.9.0-exp.1",
+  "package": {
+    "name": "com.unity.pipeline",
+    "version": "0.9.0-exp.1"
+  },
+  "unityVersionPrefix": "7000.",
+  "files": [
+    {
+      "path": "Editor/EditorMethodReloadWatcher.cs",
+      "originalSha256": "73eb6105c9c07f949525f674c61308e728f59d629df8ebff24bd07575177b811",
+      "patchedSha256": "fd2adcbaa0a184d2dd6b61048c9729293132a847a441a8c8e9de15c0745b154b",
+      "edits": [
+        {
+          "startByte": 1816,
+          "deleteBytes": 0,
+          "insert": "partial "
+        },
+        {
+          "startByte": 7887,
+          "deleteBytes": 0,
+          "insert": "            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;\n"
+        },
+        {
+          "startByte": 8000,
+          "deleteBytes": 71,
+          "insert": "#if !UNITY_7000_0_OR_NEWER\n            AssemblyReloadEvents.beforeAssemblyReload += OnBeforeAssemblyReload;\n#endif\n        }\n\n#if UNITY_7000_0_OR_NEWER\n        [Unity.Scripting.LifecycleManagement.OnCodeUnloading]\n#endif\n        private static void OnBeforeAssemblyReload()\n        {\n            EditorApplication.delayCall -= ResumeWatchIfPersisted;\n            EditorApplication.update -= OnEditorUpdate;\n            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;\n#if !UNITY_7000_0_OR_NEWER\n            AssemblyReloadEvents.beforeAssemblyReload -= OnBeforeAssemblyReload;\n#endif\n            UnhookPlayerConnect();\n            DisposeWatcher();\n        }\n\n        private static void OnPlayModeStateChanged(PlayModeStateChange state)\n        {\n            if (!s_Watching || !EditorSettings.enterPlayModeOptionsEnabled ||\n                (EditorSettings.enterPlayModeOptions & EnterPlayModeOptions.DisableDomainReload) == 0)\n                return;\n\n            if (state == PlayModeStateChange.EnteredPlayMode\n#if UNITY_7000_0_OR_NEWER\n                || state == PlayModeStateChange.EnteredEditMode\n#endif\n                )\n            {\n                // Session cleanup cleared the overrides, but no compile changed the watched source.\n                // Queue through the normal debounce after the new session has registered its targets.\n                QueueJournaledReapplies();\n            }\n        }\n\n        private static void QueueJournaledReapplies()\n        {\n            double now = EditorApplication.timeSinceStartup;\n            foreach (var path in ComputeResumeReapplies(true, GetJournaledAppliedFiles()))\n                s_Pending[path] = now"
+        }
+      ]
+    },
+    {
+      "path": "Editor/EditorPipelineStartup.cs",
+      "originalSha256": "6199a43503fb0d6e7d4963cd241662685a91ba5fb72079e540f2c0ab0cb02015",
+      "patchedSha256": "1e19006e02ba8206f0c871df78ad1a9bf50ff827b5ad72d23ab86272fba0e03f",
+      "edits": [
+        {
+          "startByte": 921,
+          "deleteBytes": 0,
+          "insert": "partial "
+        },
+        {
+          "startByte": 4360,
+          "deleteBytes": 30,
+          "insert": "The server survives Play Mode transitions, but must release its listener before code unloads.\n#if !UNITY_7000_0_OR_NEWER"
+        },
+        {
+          "startByte": 4472,
+          "deleteBytes": 78,
+          "insert": "#endif"
+        },
+        {
+          "startByte": 23113,
+          "deleteBytes": 45,
+          "insert": "Release the server and editor callbacks before their owning code unloads"
+        },
+        {
+          "startByte": 23183,
+          "deleteBytes": 0,
+          "insert": "#if UNITY_7000_0_OR_NEWER\n        // Registration runs before InitializeOnLoad, when config ScriptableObjects are unavailable.\n        // Keep registration separate so it cannot run the server owner's static constructor early.\n        internal static partial class LifecycleCleanup\n        {\n            [OnCodeUnloading]\n            private static void Unload() => OnBeforeAssemblyReload();\n        }\n#endif\n"
+        },
+        {
+          "startByte": 23258,
+          "deleteBytes": 458,
+          "insert": "EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;\n            EditorApplication.quitting -= OnEditorQuitting;\n            EditorApplication.wantsToQuit -= OnEditorWantsToQuit;\n#if !UNITY_7000_0_OR_NEWER\n            AssemblyReloadEvents.beforeAssemblyReload -= OnBeforeAssemblyReload;\n#endif\n            StopServer();\n            // InitializeOnLoad creates a new owner and server after the reload."
+        }
+      ]
+    },
+    {
+      "path": "Runtime/Common/CommandLineBinder.cs",
+      "originalSha256": "7b8cf783a8b9d4e3da7e4944db84a442ca81674e3f9b37e83dee8b7eea66435d",
+      "patchedSha256": "d72e23f804a8e4af006eee9c20e0048b795ebc52a682e8d86052dbf1e7b3e3fe",
+      "edits": [
+        {
+          "startByte": 1784,
+          "deleteBytes": 0,
+          "insert": "#if UNITY_6000_7_OR_NEWER\n        [Unity.Scripting.LifecycleManagement.NoAutoStaticsCleanup] // Shared empty metadata has no per-play state.\n#endif\n"
+        }
+      ]
+    },
+    {
+      "path": "Runtime/IlInterpreter/ScriptDelegateAdapter.cs",
+      "originalSha256": "17a47b6958f954fb7811f2c5f830833be9299bb9c8c97cad20b458a323382c5e",
+      "patchedSha256": "d470471445493e4134dbe81e7579fd4e8c4fe104c4d5bb73382f7ed5093f3eae",
+      "edits": [
+        {
+          "startByte": 5723,
+          "deleteBytes": 0,
+          "insert": "#if UNITY_6000_7_OR_NEWER\n        [Unity.Scripting.LifecycleManagement.NoAutoStaticsCleanup] // Empty arguments contain no per-call or per-play state.\n#endif\n"
+        }
+      ]
+    },
+    {
+      "path": "Runtime/IlInterpreter/VmEngine.cs",
+      "originalSha256": "3b3c412474bfbfd27ebc0be891d20b00a447ea68346335e56937a43e5e9ea68e",
+      "patchedSha256": "5c14f3fe295512b2d6419691e43c38b6ce54d0f9ce0ec64619838c9494c8303b",
+      "edits": [
+        {
+          "startByte": 2874,
+          "deleteBytes": 0,
+          "insert": "#if UNITY_6000_7_OR_NEWER\n        [Unity.Scripting.LifecycleManagement.NoAutoStaticsCleanup] // Primitive array types are stable runtime metadata.\n#endif\n"
+        }
+      ]
+    },
+    {
+      "path": "Runtime/MethodReload/MethodReloadRegistry.cs",
+      "originalSha256": "b0c34d07c0c964aca374c58ccff865e3e15d323d252f5cc0b01f5c4c716c5879",
+      "patchedSha256": "a30d73a22d87f85be25e8be90a20ec892347b1b6fb42e704d194ea6958f4f72a",
+      "edits": [
+        {
+          "startByte": 552,
+          "deleteBytes": 424,
+          "insert": "These statics describe the current Play session. Explicit lifecycle cleanup resets them\n    /// together with RuntimePipelineDriver's discovery latch, even when domain reload is disabled.\n    /// The lock and collection instances stay valid for the editor server across transitions"
+        },
+        {
+          "startByte": 997,
+          "deleteBytes": 17,
+          "insert": "#if UNITY_6000_5_OR_NEWER\n    [Unity.Scripting.LifecycleManagement.NoAutoStaticsCleanup]\n#endif\n    public static partial"
+        },
+        {
+          "startByte": 4244,
+          "deleteBytes": 0,
+          "insert": "\n#if UNITY_7000_0_OR_NEWER\n        [OnEnteringPlayMode]\n        [OnExitingPlayMode]\n#else\n        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]\n#endif\n        private static void ResetSessionState()\n        {\n            RuntimePipelineDriver.ResetMethodReloadDiscoveryLatch(ClearSessionState);\n        }\n\n        private static void ClearSessionState()\n        {\n            m_MethodOverrides.Clear();\n            m_ReloadableMethods.Clear();\n            m_LoadedMethodReloadTypes.Clear();\n            Dispatcher = null;\n            AllowedReloadRoots = null;\n            OverridesChanged = null;\n            lock (s_FirstReloadNotes)\n            {\n                s_FirstReloadNotes.Clear();\n                s_FirstReloadNotesFlushed = false;\n            }\n        }\n"
+        },
+        {
+          "startByte": 34175,
+          "deleteBytes": 0,
+          "insert": "\n"
+        }
+      ]
+    },
+    {
+      "path": "Runtime/PlayerSupport/RuntimePipelineDriver.cs",
+      "originalSha256": "5d01fa2c91c570a9372a0d93078eee1fc26983cbe3766b4fd433f911c0199e2e",
+      "patchedSha256": "f795df8fe6442daea1067e231c289d5d5816221f70efcf823bb6fc7521d2c966",
+      "edits": [
+        {
+          "startByte": 7654,
+          "deleteBytes": 360,
+          "insert": "MethodReloadRegistry resets this latch with its session state while holding the same lock\n        // as discovery, so a scan cannot repopulate a registry halfway through its cleanup"
+        },
+        {
+          "startByte": 10406,
+          "deleteBytes": 0,
+          "insert": "Action clearRegistry = null"
+        },
+        {
+          "startByte": 10453,
+          "deleteBytes": 0,
+          "insert": "            {\n                clearRegistry?.Invoke();\n"
+        },
+        {
+          "startByte": 10491,
+          "deleteBytes": 0,
+          "insert": "            }\n"
+        }
+      ]
+    }
+  ]
+}

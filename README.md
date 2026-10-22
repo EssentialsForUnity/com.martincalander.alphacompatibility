@@ -12,9 +12,11 @@ Minimum Editor: Unity 7 (`7000.0`)
 
 License: [Proprietary License](LICENSE.md), owned by Martin Calander.
 
-All current code is Editor-only. Each workaround has its own assembly and
-package constraints, so an unrelated project does not need to install every
-integration supported by this package.
+The imported assemblies are Editor-only. Each workaround has its own assembly
+and package constraints. Optional source fixes also repair lifecycle behavior
+in installed Unity packages, including their runtime assemblies. These fixes
+are applied explicitly before validation; installing this package alone does
+not modify another package or the Library cache.
 
 ## Installation
 
@@ -59,6 +61,41 @@ review. The runtime version check also requires the exact affected pair.
 
 The first release reuses Git Submodule Manager's Harmony provider. It does not
 ship a second copy of Harmony. See [Third Party Notices](Third%20Party%20Notices.md).
+
+## Source fixes
+
+Some Unity lifecycle metadata is generated while compiling the affected package.
+An Editor patch cannot add that metadata afterward. The source-fix tool keeps
+these changes separate from the automatic Editor workarounds.
+
+With Python 3.9 or newer, run the tool from this package checkout or its resolved
+package directory. Close the target Editor before applying source fixes:
+
+```sh
+python3 Tools~/apply-source-fixes.py --project "$PROJECT" --check \
+  --fix pipeline-lifecycle-0.9.0-exp.1 --fix urp-rendering-lifecycle-17.7.0
+python3 Tools~/apply-source-fixes.py --project "$PROJECT" --apply \
+  --fix pipeline-lifecycle-0.9.0-exp.1 --fix urp-rendering-lifecycle-17.7.0
+```
+
+Select only fixes for packages installed in that project. Start with a check,
+apply reviewed fixes, then resolve packages, recompile, and run the relevant
+tests in Unity.
+The tool requires the affected package to be present in the project or its
+resolved package cache. It checks the Editor version, package version, and exact
+source hashes before changing anything. It embeds a complete copy when needed,
+preserves upstream metadata and licenses, and never edits `Library/PackageCache`.
+Unknown local edits to a target file require review rather than being overwritten.
+
+Commit the resulting embedded package with the host project so a fresh checkout
+has the fixes before its first compilation. Updating this Git dependency does
+not update an embedded vendor package. Review and retire its source fixes when
+upgrading that vendor package.
+
+The source-fix records cover Pipeline `0.9.0-exp.1` and URP `17.7.0` on Unity 7.
+They preserve the equivalent fixes already present in CaveExpedition and apply
+the same generic behavior to the other affected hosts. They do not copy Cave's
+lighting, rendering, or game-specific customizations.
 
 ## Workaround record
 
@@ -112,12 +149,106 @@ handlers are discovered without the patch, then remove its assembly and tests
 and record the fixed upstream versions here and in the changelog. No upstream
 issue reference is recorded yet.
 
+### ASE-001: Aseprite tile sprite identity
+
+**Status:** Active on Unity 7 with Aseprite `7.0.0` or `7.0.1`.
+
+**Symptom:** The importer uses a process-dependent string hash to match tile
+sets. After restarting the CoreCLR Editor, reimport can replace existing sprite
+identities and break serialized references.
+
+**Fix:** An asset preprocessor updates the saved matching key to the current
+process's value before the importer matches tile sets. Existing sprite IDs stay
+with their source tiles. The assembly is excluded when Aseprite is absent or its
+version is outside the affected pair. It requires no Harmony provider.
+
+**Coverage:** A synthetic two-tile file, stale matching keys, repeated imports,
+and a two-process reimport check. The synthetic fixture is independent of game
+assets. Keep authored Aseprite layer UUIDs and source save settings.
+
+**Remove when:** The importer uses stable tile-set matching across Editor
+processes. Verify sprite GUIDs and local file IDs survive a fresh-process import
+without this preprocessor before removing it.
+
+### PIPE-001: Pipeline code and Play Mode lifecycle
+
+**Status:** Explicit source fix for Pipeline `0.9.0-exp.1` on Unity 7.
+
+**Symptom:** Server callbacks and native file watchers can survive code unload;
+method reload state and immutable metadata caches can be reset inconsistently
+when entering or leaving Play Mode without a domain reload.
+
+**Fix:** Scoped teardown preserves watch preferences and journals. Session state
+and the discovery latch reset together. Compile-time lifecycle annotations keep
+immutable metadata and explicitly managed state from automatic static cleanup.
+The source fix excludes Cave's separate change to the lightmapper command.
+
+**Remove when:** An upstream Pipeline package implements equivalent unload and
+retained-domain lifecycle behavior. Run the focused lifecycle suite and repeated
+Play Mode checks before returning to its unmodified package source.
+
+### URP-001: RenderingUtils resource lifecycle
+
+**Status:** Explicit source fix for URP `17.7.0` on Unity 7.
+
+**Symptom:** Cached fullscreen mesh and fallback material resources require
+explicit disposal around code unload and retained-domain Play Mode transitions.
+
+**Fix:** Preserve the static owner and dispose its native resources through
+Unity lifecycle callbacks. The resources are recreated when next requested.
+This record covers only the generic RenderingUtils resources, not project-owned
+light registries, water, fog, or exposure effects.
+
+**Remove when:** An upstream URP version owns these resources correctly through
+the same lifecycle transitions. Verify cleanup, repeated cleanup, and recreation
+without this source fix before removing the embedded replacement.
+
+## Other compatibility fixes
+
+The following fixes remain with the package that owns the affected source or
+assets. They are not supplied automatically by Alpha Compatibility.
+
+| Area | Affected installed hosts | Handling |
+| --- | --- | --- |
+| Addressables `4.1.1` Unity 7 development-build compilation flag | EssentialsWorkspace, CaveExpedition | Both retain the existing source guard. Compilation must succeed before Editor patches can load. |
+| Cinemachine `6.7.0` input initialization order | CaveExpedition | Retain its source initialization fix. Other audited hosts do not install Cinemachine. |
+| Obi native serialization and managed pinning | CaveExpedition | Retain its runtime source fixes. Other audited hosts do not install Obi. |
+| Steam Audio macOS CoreCLR native binding | CaveExpedition | Retain its player binding fix and native libraries. Other audited hosts do not install Steam Audio. |
+| Water, fog, exposure, and custom rendering ownership | CaveExpedition | Retain package-specific lifecycle support and authored rendering behavior. |
+| Git Submodule Manager, Minimal Editor, Project Icon, and Essentials API support | Hosts using those packages | Retain the owning package's tested integrations and lifecycle support. Alpha Compatibility also uses Git Submodule Manager's Harmony provider for RG-001. |
+
+Do not install an unrelated package solely to apply its workaround. This inventory
+records the five audited hosts; it is not a claim about every Unity alpha release.
+
 ## Verification
 
 For a Git installation, add `com.martincalander.alphacompatibility` to the host
 manifest's `testables` array. Embedded packages expose their tests directly.
-Use the host's Unity Test Framework to run the EditMode assembly
-`MartinCalander.AlphaCompatibility.Editor.Tests`.
+Use the host's Unity Test Framework to run the applicable Alpha Compatibility
+EditMode assemblies. The original RenderGraph assembly is
+`MartinCalander.AlphaCompatibility.Editor.Tests`. Optional integration assemblies
+are included only when their version constraints match.
+
+The source-fix suites report an explicit skip when their optional source fix is
+absent. A host being validated with those fixes must run them with zero skips.
+On a host with Pipeline and URP source fixes, run these assemblies:
+
+- `MartinCalander.AlphaCompatibility.Editor.Tests` (36 RenderGraph cases)
+- `MartinCalander.AlphaCompatibility.Editor.PipelineLifecycle.Tests` (8 cases)
+- `MartinCalander.AlphaCompatibility.Editor.UrpSource.Tests` (6 cases)
+- `MartinCalander.AlphaCompatibility.Editor.Aseprite.Tests` (2 cases, when Aseprite is installed)
+
+The source tool's rollback, refusal, preservation, and repeat-application checks
+run with `python3 -m unittest discover -s Tools~ -p 'test_*.py'`.
+
+**0.2.0 prepublication checks (2026-10-22):** On Unity `7000.0.0a11`,
+EssentialsWorkspace passed all 50 applicable EditMode cases and SuperBigBoyBoxing
+passed all 52, with no failures or skips. The source tool passed all 10 Python
+checks. A generated two-tile Aseprite file was also imported in two separate
+Editor processes: the process-dependent matching key changed, while both sprite
+GUIDs and their imported asset GUIDs/local IDs stayed identical. Aseprite `7.0.1`
+was exercised; `7.0.0` is included by its version gate but was not installed for
+this run. Other Editor versions were not exercised.
 
 Discover the host's current Pipeline command schemas before invoking commands.
 For the verified versions, the focused checks are:
@@ -137,8 +268,10 @@ handlers. Integration tests are only available for the affected package pair.
 
 ## Adding and retiring fixes
 
-Add each workaround under its own `Editor/` area with focused tests and the
-smallest applicable version constraints. Add a record here describing the
+Add automatic workarounds under their own `Editor/` area with focused tests and
+the smallest applicable version constraints. Source changes belong in a separate
+version- and content-checked record under `SourcePatches~/`. Preserve upstream
+ownership and licenses, and keep project-specific behavior with its owner. Add a record here describing the
 symptom, affected Editor and package versions, upstream issue when known,
 implementation scope, verification evidence, and explicit removal condition.
 Update `CHANGELOG.md` when a fix is added, widened, changed, or removed.

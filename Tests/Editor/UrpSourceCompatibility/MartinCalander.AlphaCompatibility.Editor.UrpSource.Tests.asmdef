@@ -1,0 +1,30 @@
+{
+  "name": "MartinCalander.AlphaCompatibility.Editor.UrpSource.Tests",
+  "rootNamespace": "MartinCalander.AlphaCompatibility.Editor.Tests",
+  "references": [
+    "Unity.RenderPipelines.Universal.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_7000_0_OR_NEWER",
+    "!UNITY_7001_0_OR_NEWER",
+    "ALPHA_COMPATIBILITY_URP_17_7"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.render-pipelines.universal",
+      "expression": "[17.7.0]",
+      "define": "ALPHA_COMPATIBILITY_URP_17_7"
+    }
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

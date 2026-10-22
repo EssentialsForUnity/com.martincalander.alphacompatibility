@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 - 2026-10-22
+
+- Share the version-gated Aseprite tile identity workaround and import regression tests.
+- Add explicit, content-checked Pipeline and URP source fixes for Unity 7 lifecycle behavior, preserving upstream package metadata and licenses.
+- Add focused lifecycle coverage and document which compatibility fixes remain with their owning packages.
+- Keep optional integrations inactive when their affected packages are absent or outside the supported versions.
+
 ## 0.1.1 - 2026-10-22
 
 - Made the repository public while retaining the proprietary license.

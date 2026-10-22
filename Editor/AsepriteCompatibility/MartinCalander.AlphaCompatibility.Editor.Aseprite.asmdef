@@ -1,0 +1,25 @@
+{
+    "name": "MartinCalander.AlphaCompatibility.Editor.Aseprite",
+    "rootNamespace": "MartinCalander.AlphaCompatibility.Editor",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_7000_0_OR_NEWER",
+        "ALPHA_COMPATIBILITY_ASEPRITE_7_0_0 || ALPHA_COMPATIBILITY_ASEPRITE_7_0_1"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.2d.aseprite",
+            "expression": "[7.0.0]",
+            "define": "ALPHA_COMPATIBILITY_ASEPRITE_7_0_0"
+        },
+        {
+            "name": "com.unity.2d.aseprite",
+            "expression": "[7.0.1]",
+            "define": "ALPHA_COMPATIBILITY_ASEPRITE_7_0_1"
+        }
+    ]
+}
