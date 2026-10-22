@@ -18,15 +18,24 @@ integration supported by this package.
 
 ## Installation
 
-Use **Package Manager > Install package from git URL** with repository access:
+The repository is public. Use **Package Manager > Install package from git URL**:
 
 ```text
 https://github.com/EssentialsForUnity/com.martincalander.alphacompatibility.git
 ```
 
-The Git URL follows the repository's default `main` branch. In Essentials
-Workspace the same repository is an embedded package submodule at
-`Packages/com.martincalander.alphacompatibility`, tracking `main`.
+The Git URL follows the repository's default `main` branch. To install through
+the project manifest, add this entry to `Packages/manifest.json`:
+
+```json
+"com.martincalander.alphacompatibility": "https://github.com/EssentialsForUnity/com.martincalander.alphacompatibility.git"
+```
+
+Use one installation source per project. Remove an older embedded copy or
+submodule and any equivalent host RenderGraph shim when switching to the Git
+dependency. Keep `enableLockFile` set to `false` and the generated
+`Packages/packages-lock.json` untracked in hosts that follow the latest upstream
+Git dependencies. Repository visibility does not change the proprietary license.
 
 The RenderGraph fix requires these packages already installed in the host:
 

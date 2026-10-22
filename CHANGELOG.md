@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1 - 2026-10-22
+
+- Made the repository public while retaining the proprietary license.
+- Documented installation as a Git dependency following the default branch and migration from embedded copies, submodules, or host shims.
+
 ## 0.1.0 - 2026-10-21
 
 - Extracted the RenderGraph command compatibility fix and regression tests from Essentials Workspace into an Editor-only UPM package.
