@@ -85,6 +85,8 @@ The tool requires the affected package to be present in the project or its
 resolved package cache. It checks the Editor version, package version, and exact
 source hashes before changing anything. It embeds a complete copy when needed,
 preserves upstream metadata and licenses, and never edits `Library/PackageCache`.
+Upstream `AGENTS.md` instruction files and their matching metadata are excluded
+when embedding packages, keeping workspace guidance at the host root.
 Unknown local edits to a target file require review rather than being overwritten.
 
 Commit the resulting embedded package with the host project so a fresh checkout

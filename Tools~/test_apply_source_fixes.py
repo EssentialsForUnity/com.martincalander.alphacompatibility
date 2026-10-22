@@ -64,6 +64,44 @@ class SourceFixTests(unittest.TestCase):
         fixes.apply_plan(self.project, plans)
         self.assertEqual((source / "custom.cs").read_text(), "user changes\n")
 
+    def test_embedding_omits_upstream_agent_guidance_at_every_depth(self):
+        for embedded in (False, True):
+            with self.subTest(embedded=embedded):
+                name = "com.example.guidance" + str(int(embedded))
+                source, spec = self.package(name, embedded=embedded)
+                for folder in [source, source / "Nested"]:
+                    folder.mkdir(exist_ok=True)
+                    (folder / "AGENTS.md").write_text("Upstream agent instructions\n")
+                    (folder / "AGENTS.md.meta").write_text("guid: instructions\n")
+                    (folder / "README.md").write_text("Keep vendor documentation\n")
+                original = fixes.tree_signature(source)
+                plans, _ = fixes.make_plan(self.project, [spec])
+                fixes.apply_plan(self.project, plans)
+                destination = self.project / "Packages" / name
+                self.assertFalse(list(destination.rglob("AGENTS.md")))
+                self.assertFalse(list(destination.rglob("AGENTS.md.meta")))
+                self.assertEqual((destination / "Nested/README.md").read_text(), "Keep vendor documentation\n")
+                self.assertEqual((destination / "LICENSE.md").read_text(), "Original vendor license\n")
+                self.assertEqual((destination / "target.cs.meta").read_text(), "guid: untouched\n")
+                if not embedded:
+                    self.assertEqual(fixes.tree_signature(source), original)
+
+    def test_known_patched_cache_is_embedded_without_byte_edits(self):
+        source, spec = self.package()
+        (source / "target.cs").write_bytes(b"after\n")
+        cache = fixes.tree_signature(source)
+        plans, report = fixes.make_plan(self.project, [spec])
+        self.assertEqual(report[0]["state"], "already-patched")
+        self.assertFalse(plans["com.example.fixture"]["changes"])
+        fixes.apply_plan(self.project, plans)
+        destination = self.project / "Packages/com.example.fixture"
+        self.assertEqual(fixes.tree_signature(destination), cache)
+        self.assertEqual(fixes.tree_signature(source), cache)
+        before = fixes.tree_signature(self.project)
+        plans, _ = fixes.make_plan(self.project, [spec])
+        fixes.apply_plan(self.project, plans)
+        self.assertEqual(fixes.tree_signature(self.project), before)
+
     def test_unknown_target_refuses_without_changing_any_package(self):
         first, one = self.package()
         second, two = self.package("com.example.second", embedded=True)

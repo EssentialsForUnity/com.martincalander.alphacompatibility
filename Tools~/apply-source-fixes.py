@@ -170,7 +170,7 @@ def activate(plans, transaction):
 
 
 def apply_plan(project, packages):
-    changed = [p for p in packages.values() if p["changes"]]
+    changed = [p for p in packages.values() if p["changes"] or p["source"] != p["destination"]]
     if not changed:
         return
     # A single transaction holds every staged package and rollback copy on the
@@ -182,7 +182,10 @@ def apply_plan(project, packages):
             source = plan["source"]
             plan["signature"] = tree_signature(source)
             staged = transaction / ("stage-" + str(index))
-            shutil.copytree(source, staged, symlinks=True)
+            # Workspace instructions belong at the host root. Do not import
+            # upstream agent guidance or its Unity metadata into Packages.
+            shutil.copytree(source, staged, symlinks=True,
+                            ignore=shutil.ignore_patterns("AGENTS.md", "AGENTS.md.meta"))
             for relative, data in plan["changes"].items():
                 target = safe_path(staged, relative)
                 if target.read_bytes() != plan["originals"][relative]:

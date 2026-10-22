@@ -1,6 +1,6 @@
 {
   "name": "com.martincalander.alphacompatibility",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "displayName": "Alpha Compatibility",
   "description": "Version-scoped Unity alpha workarounds, guarded source fixes, and a maintained record of affected versions and verification.",
   "unity": "7000.0",

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 - 2026-10-22
+
+- Exclude upstream agent instruction files and their metadata when embedding vendor packages, keeping workspace guidance at the root.
+- Embed recognized patched cache sources even when no source edits are required, so the fix survives a cache rebuild.
+
 ## 0.2.0 - 2026-10-22
 
 - Share the version-gated Aseprite tile identity workaround and import regression tests.
