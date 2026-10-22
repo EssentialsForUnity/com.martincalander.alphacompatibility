@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Record the Unity 7 alpha 12 workaround review and the need to refresh embedded URP contents even when its package version is unchanged.
+
 ## 0.2.1 - 2026-10-22
 
 - Exclude upstream agent instruction files and their metadata when embedding vendor packages, keeping workspace guidance at the root.

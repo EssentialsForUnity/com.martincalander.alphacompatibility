@@ -92,7 +92,10 @@ Unknown local edits to a target file require review rather than being overwritte
 Commit the resulting embedded package with the host project so a fresh checkout
 has the fixes before its first compilation. Updating this Git dependency does
 not update an embedded vendor package. Review and retire its source fixes when
-upgrading that vendor package.
+upgrading that vendor package. Also compare the complete bundled package when
+upgrading the Editor: Unity can change package contents without changing the
+package version. Merge upstream changes into the embedded copy while preserving
+reviewed local fixes and metadata.
 
 The source-fix records cover Pipeline `0.9.0-exp.1` and URP `17.7.0` on Unity 7.
 They preserve the equivalent fixes already present in CaveExpedition and apply
@@ -204,6 +207,39 @@ light registries, water, fog, or exposure effects.
 **Remove when:** An upstream URP version owns these resources correctly through
 the same lifecycle transitions. Verify cleanup, repeated cleanup, and recreation
 without this source fix before removing the embedded replacement.
+
+## Unity 7 alpha 12 review
+
+Reviewed against Unity `7000.0.0a12` (`8751f7c83ed7`) on 2026-10-22.
+All four shared fixes remain active:
+
+- **RG-001:** SRP Core `17.7.0` still contains the same legacy RenderGraph
+  declarations as alpha 11. Pipeline `0.9.0-exp.1` still requires grouped names.
+- **ASE-001:** Aseprite `7.0.1` still uses `string.GetHashCode()` for tile-set
+  matching, which remains process-dependent under CoreCLR.
+- **PIPE-001:** The affected Pipeline source is unchanged. Alpha 12 retains
+  the same lifecycle callback contracts and does not replace owner cleanup or
+  session-state resets.
+- **URP-001:** The upstream `RenderingUtils.cs` source is byte-identical to
+  alpha 11 and still needs explicit native resource cleanup.
+
+URP remains `17.7.0`, but its alpha 12 bundle changes 16 existing files and adds
+17 files. Embedded copies need those upstream updates as well as the retained
+RenderingUtils fix. The upstream updates include additional-light shadows,
+XR ambient occlusion, material import and Light inspector fixes. See the
+[alpha 12 release notes](https://storage.googleapis.com/live-platform-resources-prd/templates/assets/7000_0_0a12_2f5dbf283f/7000_0_0a12_2f5dbf283f.md).
+
+EssentialsWorkspace compiles the merged URP source on alpha 12 and passes all
+50 applicable Alpha Compatibility EditMode cases with no failures or skips.
+This verifies the three integrations installed in that host; the Aseprite
+source review alone is not a new cross-process import test.
+
+The separate Addressables `4.1.1` guard remains necessary: alpha 12 still marks
+`ScriptCompilationOptions.DevelopmentBuild` and `Assertions`, and
+`ContentBuildFlags.DevelopmentBuild`, obsolete with compilation errors.
+Git Submodule Manager, Minimal Editor and Project Icon still need their owned
+integrations; the native Package Manager and status-bar contracts they adapt
+are unchanged. No workaround gate was widened by this review.
 
 ## Other compatibility fixes
 
