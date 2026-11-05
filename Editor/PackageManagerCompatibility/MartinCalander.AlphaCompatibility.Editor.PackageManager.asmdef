@@ -1,0 +1,16 @@
+{
+  "name": "MartinCalander.AlphaCompatibility.Editor.PackageManager",
+  "rootNamespace": "MartinCalander.AlphaCompatibility.Editor",
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": ["GitSubmoduleManager.Harmony.dll"],
+  "autoReferenced": false,
+  "defineConstraints": ["ALPHA_COMPATIBILITY_HARMONY_PROVIDER"],
+  "versionDefines": [
+    {
+      "name": "com.martincalander.gitsubmodulemanager",
+      "expression": "0.8.1",
+      "define": "ALPHA_COMPATIBILITY_HARMONY_PROVIDER"
+    }
+  ]
+}

@@ -4,6 +4,13 @@
 
 - Record the Unity 7 alpha 12 workaround review and the need to refresh embedded URP contents even when its package version is unchanged.
 
+## 0.2.3 - 2026-11-05
+
+- Resolve two removed help-box color aliases in alpha 16's native Package Manager stylesheet using its existing theme colors.
+- Restrict the repair to the affected Editor, transient native stylesheet, exact expressions and unambiguous color definitions; preserve other styles and normal error reporting.
+- Add regression coverage for both themes, unsupported expressions, version and asset boundaries, repeated application and patch cleanup.
+- Record Addressables 4.1.2's official replacements for the earlier local compatibility patches.
+
 ## 0.2.2 - 2026-11-05
 
 - Support explicitly reviewed source variants for packages whose contents change without a version change; retain exact input and output hash checks.

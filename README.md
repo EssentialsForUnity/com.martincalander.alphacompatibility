@@ -59,8 +59,10 @@ assembly and tests are excluded unless all three constraints are satisfied.
 When Pipeline or SRP Core changes version, this fix becomes inactive pending
 review. The runtime version check also requires the exact affected pair.
 
-The first release reuses Git Submodule Manager's Harmony provider. It does not
-ship a second copy of Harmony. See [Third Party Notices](Third%20Party%20Notices.md).
+The RenderGraph and Package Manager fixes reuse Git Submodule Manager's Harmony
+provider. This package does not ship a second copy of Harmony. The Package
+Manager assembly needs only that provider and is active only on the exact
+Editor version in UI-001. See [Third Party Notices](Third%20Party%20Notices.md).
 
 ## Source fixes
 
@@ -211,6 +213,53 @@ light registries, water, fog, or exposure effects.
 the same lifecycle transitions. Verify cleanup, repeated cleanup, and recreation
 without this source fix before removing the embedded replacement.
 
+### UI-001: Package Manager help-box colors
+
+**Status:** Active only on Unity `7000.0.0a16`, with Git Submodule Manager's
+existing Harmony provider.
+
+**Symptom:** Opening the native Package Manager in a fresh Editor logs
+`Trying to read value of type Color while reading a value of type Function`.
+Its merged stylesheet retains `env()` expressions for two removed
+`--theme-help-box-*` color aliases. The same error reproduces with Git Submodule
+Manager stopped and all its native UI patches removed.
+
+**Fix:** A postfix on the native `ResourceLoader.packageManagerWindowStyleSheet`
+getter resolves only those two expressions. It copies the existing color
+handles for `--unity-colors-helpbox-background` and
+`--unity-colors-helpbox-border` from the same stylesheet. Both colors match
+Unity's own HelpBox in the exported dark and light themes. No color is hardcoded.
+
+Only transient `PackageManagerWindowDark` and `PackageManagerWindowLight`
+stylesheets with `HideAndDontSave` and no asset path are eligible. The repair
+requires the exact three-handle, one-argument `env()` expression, the expected
+background or border property, and valid unambiguous native color definitions.
+It leaves existing legacy definitions, unknown expressions and missing colors
+untouched. Selectors, imports and value buffers are preserved. No console
+message is suppressed. Cleanup removes only this fix's postfix.
+
+**Coverage:** Theme color selection, idempotence, version and authored-asset
+boundaries, unknown or malformed expressions, missing or conflicting native
+colors, existing legacy definitions, and repeated initialization and cleanup.
+Native cold-window verification is also required before publishing a change.
+
+**Verified on 2026-11-05:** EssentialsWorkspace compiled the package and passed
+all 70 applicable Alpha Compatibility tests, including the 20 new cases, with
+no failures or skips. The native repair changed exactly four property-value
+arrays and the stylesheet's change hash; selectors, imports and all shared value
+buffers stayed unchanged. A second application changed nothing. In a fresh
+OpenSourceWorkspace Editor, the native window opened without color/style errors
+before any tests ran, and all 120 Git Submodule Manager integration cases passed
+on their first run.
+
+**Remove when:** A later Editor's native Package Manager resolves these colors
+without the postfix. The gate remains off on every other Editor version until
+reviewed. Check both themes in a fresh process and rerun the native integration
+tests without this patch. No upstream issue reference is recorded yet.
+
+The canonical variables are listed in Unity's
+[built-in variable reference](https://docs.unity3d.com/6000.0/Documentation/Manual/UIE-uss-built-in-variable-reference.html).
+
 ## Unity 7 alpha 12 review
 
 Reviewed against Unity `7000.0.0a12` (`8751f7c83ed7`) on 2026-10-22.
@@ -276,7 +325,7 @@ assets. They are not supplied automatically by Alpha Compatibility.
 
 | Area | Affected installed hosts | Handling |
 | --- | --- | --- |
-| Addressables `4.1.1` Unity 7 development-build compilation flag | EssentialsWorkspace, CaveExpedition | Both retain the existing source guard. Compilation must succeed before Editor patches can load. |
+| Addressables `4.1.2` Unity 7 build flags and type-resolver lifecycle | EssentialsWorkspace, CaveExpedition | Upstream 4.1.2 includes the build-flag guard, qualified test helper and lifecycle-safe type resolver. The complete source update replaces the earlier local patches; keep Cave's isolated regression fixture. |
 | Cinemachine `6.7.0` input initialization order | CaveExpedition | Retain its source initialization fix. Other audited hosts do not install Cinemachine. |
 | Obi native serialization and managed pinning | CaveExpedition | Retain its runtime source fixes. Other audited hosts do not install Obi. |
 | Steam Audio macOS CoreCLR native binding | CaveExpedition | Retain its player binding fix and native libraries. Other audited hosts do not install Steam Audio. |
@@ -303,6 +352,7 @@ On a host with Pipeline and URP source fixes, run these assemblies:
 - `MartinCalander.AlphaCompatibility.Editor.PipelineLifecycle.Tests` (8 cases)
 - `MartinCalander.AlphaCompatibility.Editor.UrpSource.Tests` (6 cases)
 - `MartinCalander.AlphaCompatibility.Editor.Aseprite.Tests` (2 cases, when Aseprite is installed)
+- `MartinCalander.AlphaCompatibility.Editor.PackageManager.Tests` (20 cases, native hook restricted to alpha 16)
 
 The source tool's rollback, refusal, preservation, and repeat-application checks
 run with `python3 -m unittest discover -s Tools~ -p 'test_*.py'`.
