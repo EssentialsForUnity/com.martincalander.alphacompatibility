@@ -4,6 +4,12 @@
 
 - Record the Unity 7 alpha 12 workaround review and the need to refresh embedded URP contents even when its package version is unchanged.
 
+## 0.2.2 - 2026-11-05
+
+- Support explicitly reviewed source variants for packages whose contents change without a version change; retain exact input and output hash checks.
+- Add Unity 7 alpha 16's URP RenderingUtils source while preserving its new upstream helpers and the required lifecycle cleanup.
+- Add coverage for selecting, repeating and refusing source variants, without widening the Pipeline or RenderGraph workaround gates.
+
 ## 0.2.1 - 2026-10-22
 
 - Exclude upstream agent instruction files and their metadata when embedding vendor packages, keeping workspace guidance at the root.

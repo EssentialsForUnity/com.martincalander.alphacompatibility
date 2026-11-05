@@ -85,6 +85,9 @@ The tool requires the affected package to be present in the project or its
 resolved package cache. It checks the Editor version, package version, and exact
 source hashes before changing anything. It embeds a complete copy when needed,
 preserves upstream metadata and licenses, and never edits `Library/PackageCache`.
+An unchanged package version can have several reviewed source variants. Each
+variant has its own exact original and patched hashes; unknown or ambiguous
+source content is rejected before any package is replaced.
 Upstream `AGENTS.md` instruction files and their matching metadata are excluded
 when embedding packages, keeping workspace guidance at the host root.
 Unknown local edits to a target file require review rather than being overwritten.
@@ -242,6 +245,31 @@ integrations; the native Package Manager and status-bar contracts they adapt
 are unchanged. No workaround gate was widened by this review.
 
 ## Other compatibility fixes
+
+### Unity 7 alpha 16 source review (2026-11-05)
+
+URP `17.7.0` changed again in Editor `7000.0.0a16` without a package version
+change. Its `RenderingUtils` still uses the old cached-resource reset, so URP-001
+remains necessary. The source record now accepts the exact a16 source as well as
+the earlier reviewed source, preserving the new backbuffer and scene-culling
+helpers. The tool passed all 14 safety tests, including variant selection,
+idempotence, unknown-source refusal and ambiguous-source refusal.
+
+SRP Core's 15 RenderGraph declarations are byte-identical to a12. RG-001 remains
+required with Pipeline `0.9.0-exp.1`; its existing version gate is unchanged.
+The Pipeline source fixes also remain scoped to `0.9.0-exp.1`. Pipeline
+`0.10.0-exp.1` uses a different declaration API and needs its own validation;
+this release does not broaden the automatic shim or those source recipes.
+
+Cinemachine's a16 bundled source is unchanged from a12, so CaveExpedition's
+initialization-order fix remains necessary. The other owning-package fixes
+listed below require validation in their affected hosts.
+
+OpenSourceWorkspace passed all 50 applicable Alpha Compatibility cases on a16:
+36 RenderGraph, 8 Pipeline lifecycle and 6 URP lifecycle, with zero failures or
+skips. All 15 RenderGraph handlers were discovered and native Unity compilation
+succeeded. These checks used the unchanged Editor assemblies and the reviewed
+a16 URP source; the new tool behavior was covered separately by the Python tests.
 
 The following fixes remain with the package that owns the affected source or
 assets. They are not supplied automatically by Alpha Compatibility.

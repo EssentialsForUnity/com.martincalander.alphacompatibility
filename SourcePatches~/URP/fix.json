@@ -29,6 +29,29 @@
           "deleteBytes": 7,
           "insert": ""
         }
+      ],
+      "sourceVariants": [
+        {
+          "originalSha256": "e361d5288656f3549ba805c37e73c490276e561a11f2bafdcb73fda61ed44977",
+          "patchedSha256": "e19323e1f2951c0cb2af5c4bfbe4c103fda12b4802023acdcb07789a95ee9db7",
+          "edits": [
+            {
+              "startByte": 479,
+              "deleteBytes": 0,
+              "insert": "partial "
+            },
+            {
+              "startByte": 1124,
+              "deleteBytes": 147,
+              "insert": "        [OnEnteringPlayMode]\n        [OnExitingPlayMode]\n        [Unity.Scripting.LifecycleManagement.OnCodeUnloading]\n        static void ReleaseCachedResources()\n"
+            },
+            {
+              "startByte": 1461,
+              "deleteBytes": 7,
+              "insert": ""
+            }
+          ]
+        }
       ]
     }
   ]

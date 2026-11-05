@@ -120,6 +120,36 @@ class SourceFixTests(unittest.TestCase):
         self.assertEqual(report[0]["state"], "already-patched")
         self.assertEqual((source / "target.cs").read_bytes(), b"custom plus fix\n")
 
+    def test_reviewed_source_variant_preserves_new_upstream_content(self):
+        source, spec = self.package(embedded=True)
+        original = b"new upstream\nbefore\n"
+        expected = b"new upstream\nafter\n"
+        (source / "target.cs").write_bytes(original)
+        spec["files"][0]["sourceVariants"] = [{
+            "originalSha256": fixes.sha(original), "patchedSha256": fixes.sha(expected),
+            "edits": [{"startByte": 13, "deleteBytes": 6, "insert": "after"}]}]
+        plans, _ = fixes.make_plan(self.project, [spec])
+        fixes.apply_plan(self.project, plans)
+        self.assertEqual((source / "target.cs").read_bytes(), expected)
+        before = fixes.tree_signature(self.project)
+        plans, report = fixes.make_plan(self.project, [spec])
+        fixes.apply_plan(self.project, plans)
+        self.assertEqual(report[0]["state"], "already-patched")
+        self.assertEqual(fixes.tree_signature(self.project), before)
+        (source / "target.cs").write_bytes(original + b"unknown change\n")
+        with self.assertRaisesRegex(fixes.FixError, "Unknown source"):
+            fixes.make_plan(self.project, [spec])
+
+    def test_ambiguous_source_variant_refuses_before_writing(self):
+        source, spec = self.package(embedded=True)
+        record = spec["files"][0]
+        record["sourceVariants"] = [{key: record[key] for key in
+                                     ("originalSha256", "patchedSha256", "edits")}]
+        before = fixes.tree_signature(self.project)
+        with self.assertRaisesRegex(fixes.FixError, "Ambiguous source"):
+            fixes.make_plan(self.project, [spec])
+        self.assertEqual(fixes.tree_signature(self.project), before)
+
     def test_wrong_unity_and_package_versions_refuse(self):
         source, spec = self.package()
         (self.project / "ProjectSettings/ProjectVersion.txt").write_text("m_EditorVersion: 6000.6.0f1\n")

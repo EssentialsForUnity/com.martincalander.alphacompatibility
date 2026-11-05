@@ -43,12 +43,17 @@ def safe_path(root, relative):
 
 def patch_bytes(original, spec):
     digest = sha(original)
-    accepted = [spec["patchedSha256"]] + spec.get("alreadyPatchedSha256", [])
+    variants = [spec] + spec.get("sourceVariants", [])
+    accepted = [variant["patchedSha256"] for variant in variants] + spec.get("alreadyPatchedSha256", [])
     if digest in accepted:
         return original, "already-patched"
-    if digest != spec["originalSha256"]:
+    matches = [variant for variant in variants if digest == variant["originalSha256"]]
+    if not matches:
         raise FixError("Unknown source content for " + spec["path"] + ": " + digest)
-    edits = sorted(spec["edits"], key=lambda edit: edit["startByte"])
+    if len(matches) != 1:
+        raise FixError("Ambiguous source content for " + spec["path"] + ": " + digest)
+    variant = matches[0]
+    edits = sorted(variant["edits"], key=lambda edit: edit["startByte"])
     end = 0
     for edit in edits:
         start, count = edit["startByte"], edit["deleteBytes"]
@@ -59,7 +64,7 @@ def patch_bytes(original, spec):
     for edit in reversed(edits):
         start, count = edit["startByte"], edit["deleteBytes"]
         result = result[:start] + edit["insert"].encode("utf-8") + result[start + count:]
-    if sha(result) != spec["patchedSha256"]:
+    if sha(result) != variant["patchedSha256"]:
         raise FixError("Patched hash mismatch for " + spec["path"])
     return result, "patch-required"
 
