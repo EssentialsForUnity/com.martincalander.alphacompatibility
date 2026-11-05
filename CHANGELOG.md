@@ -4,6 +4,12 @@
 
 - Record the Unity 7 alpha 12 workaround review and the need to refresh embedded URP contents even when its package version is unchanged.
 
+## 0.2.4 - 2026-11-05
+
+- Add a separate exact-source lifecycle recipe for Pipeline 0.10.0-exp.1, preserving its upstream changes and the existing 0.9 recipe.
+- Drop the three redundant immutable-metadata field edits from the 0.10 recipe because upstream now protects their owning types.
+- Verify native discovery of all 15 RenderGraph handlers with the old shim excluded, and extend the lifecycle suite to the reviewed 0.10 source.
+
 ## 0.2.3 - 2026-11-05
 
 - Resolve two removed help-box color aliases in alpha 16's native Package Manager stylesheet using its existing theme colors.

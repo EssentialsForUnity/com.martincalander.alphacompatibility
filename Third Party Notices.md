@@ -16,6 +16,8 @@ software or replace its license.
 - `SourcePatches~/Pipeline` targets `com.unity.pipeline` version `0.9.0-exp.1`,
   copyright Unity Technologies, licensed under the Unity Terms of Service. Its
   original notice is preserved in `SourcePatches~/Pipeline/UPSTREAM-LICENSE.md`.
+- `SourcePatches~/Pipeline010` targets the same package at `0.10.0-exp.1`, with
+  its original notice preserved in `SourcePatches~/Pipeline010/UPSTREAM-LICENSE.md`.
 - `SourcePatches~/URP` targets `com.unity.render-pipelines.universal` version
   `17.7.0`, copyright Unity Technologies ApS, licensed under the Unity Companion
   License for Unity-dependent projects. Its original notice is preserved in

@@ -26,7 +26,8 @@ namespace MartinCalander.AlphaCompatibility.Editor.Tests
                 startup.GetNestedType("LifecycleCleanup", BindingFlags.NonPublic) == null)
                 Assert.Ignore("Apply the optional source fix before running these tests: " +
                     "python3 Tools~/apply-source-fixes.py --project <project> --apply " +
-                    "--fix pipeline-lifecycle-0.9.0-exp.1");
+                    "--fix pipeline-lifecycle-" +
+                    UnityEditor.PackageManager.PackageInfo.FindForAssembly(registry.Assembly).version);
         }
 
         [TestCase(typeof(OnEnteringPlayModeAttribute))]
@@ -130,8 +131,12 @@ namespace MartinCalander.AlphaCompatibility.Editor.Tests
         {
             var field = FindType(owner).GetField(fieldName, StaticMembers);
             Assert.That(field, Is.Not.Null);
-            Assert.That(field.GetCustomAttributes(false).Any(attribute =>
-                attribute.GetType().Name == "NoAutoStaticsCleanupAttribute"), Is.True);
+            bool fieldProtected = field.GetCustomAttributes(false).Any(attribute =>
+                attribute.GetType().Name == "NoAutoStaticsCleanupAttribute");
+            bool ownerProtected = field.DeclaringType.GetCustomAttributes(false).Any(attribute =>
+                attribute.GetType().Name == "NoAutoStaticsCleanupAttribute");
+            Assert.That(fieldProtected || ownerProtected, Is.True,
+                "Pipeline 0.10 protects the owning type instead of individual fields.");
             Assert.That(field.GetValue(null), Is.Not.Null);
         }
 

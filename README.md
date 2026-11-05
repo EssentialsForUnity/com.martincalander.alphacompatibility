@@ -102,7 +102,9 @@ upgrading the Editor: Unity can change package contents without changing the
 package version. Merge upstream changes into the embedded copy while preserving
 reviewed local fixes and metadata.
 
-The source-fix records cover Pipeline `0.9.0-exp.1` and URP `17.7.0` on Unity 7.
+The source-fix records cover Pipeline `0.9.0-exp.1` and `0.10.0-exp.1`, and URP
+`17.7.0` on Unity 7. Select `pipeline-lifecycle-0.10.0-exp.1` for Pipeline 0.10;
+the earlier recipe remains available for hosts still using 0.9.
 They preserve the equivalent fixes already present in CaveExpedition and apply
 the same generic behavior to the other affected hosts. They do not copy Cave's
 lighting, rendering, or game-specific customizations.
@@ -111,7 +113,8 @@ lighting, rendering, or game-specific customizations.
 
 ### RG-001: RenderGraph command discovery
 
-**Status:** Active for Pipeline `0.9.0-exp.1` and SRP Core `17.7.0`.
+**Status:** Active for Pipeline `0.9.0-exp.1` and SRP Core `17.7.0`. Pipeline
+`0.10.0-exp.1` supports these declarations natively and excludes this shim.
 
 **Symptom:** SRP Core declares 15 commands with names such as
 `render_graph.graphs`. Pipeline 0.9 requires a separate command group and name,
@@ -182,7 +185,8 @@ without this preprocessor before removing it.
 
 ### PIPE-001: Pipeline code and Play Mode lifecycle
 
-**Status:** Explicit source fix for Pipeline `0.9.0-exp.1` on Unity 7.
+**Status:** Separate exact-source recipes for Pipeline `0.9.0-exp.1` and
+`0.10.0-exp.1` on Unity 7.
 
 **Symptom:** Server callbacks and native file watchers can survive code unload;
 method reload state and immutable metadata caches can be reset inconsistently
@@ -192,6 +196,12 @@ when entering or leaving Play Mode without a domain reload.
 and the discovery latch reset together. Compile-time lifecycle annotations keep
 immutable metadata and explicitly managed state from automatic static cleanup.
 The source fix excludes Cave's separate change to the lightmapper command.
+Pipeline 0.10 protects the immutable metadata owners upstream, so its recipe
+does not alter `CommandLineBinder`, `ScriptDelegateAdapter`, or `VmEngine`.
+Its server already stops before assembly reload; the remaining Editor changes
+also release event subscriptions and file watchers through code-unload callbacks.
+The runtime changes reset session state and discovery together, and the watcher
+requeues its journal after retained-domain Play Mode transitions.
 
 **Remove when:** An upstream Pipeline package implements equivalent unload and
 retained-domain lifecycle behavior. Run the focused lifecycle suite and repeated
@@ -306,9 +316,9 @@ idempotence, unknown-source refusal and ambiguous-source refusal.
 
 SRP Core's 15 RenderGraph declarations are byte-identical to a12. RG-001 remains
 required with Pipeline `0.9.0-exp.1`; its existing version gate is unchanged.
-The Pipeline source fixes also remain scoped to `0.9.0-exp.1`. Pipeline
-`0.10.0-exp.1` uses a different declaration API and needs its own validation;
-this release does not broaden the automatic shim or those source recipes.
+The initial alpha 16 review retained the `0.9.0-exp.1` source recipe. The
+subsequent Pipeline 0.10 review below supplies a separate exact-source recipe;
+it does not broaden the automatic RenderGraph shim.
 
 Cinemachine's a16 bundled source is unchanged from a12, so CaveExpedition's
 initialization-order fix remains necessary. The other owning-package fixes
@@ -335,6 +345,27 @@ assets. They are not supplied automatically by Alpha Compatibility.
 Do not install an unrelated package solely to apply its workaround. This inventory
 records the five audited hosts; it is not a claim about every Unity alpha release.
 
+### Pipeline 0.10 source review (2026-11-05)
+
+The official `0.10.0-exp.1` archive adds native dotted command declarations and
+class-level static-cleanup protection for the three immutable metadata owners.
+These changes replace RG-001 and the three field-level source edits in hosts
+using 0.10. The old automatic assembly remains constrained to exactly 0.9.
+
+The new source recipe retains four reviewed files for callback cleanup, watcher
+resumption, and atomic session-state reset. It preserves the new upstream server
+settings migration, reload behavior, output protocol and runtime code. Input and
+output hashes are checked separately from the older recipe, and all 14 source
+tool safety tests pass. The native RenderGraph regression cases require all 15
+original handlers and their metadata while the shim assembly is absent.
+
+EssentialsWorkspace passed all 50 applicable cases with zero failures or skips
+on `7000.0.0a16`: 24 Pipeline and native RenderGraph cases, 6 URP lifecycle cases,
+and 20 Package Manager cases. A real code reload and two Play Mode cycles with
+domain reload disabled succeeded, followed by another 50-case pass. Native macOS
+CoreCLR player-script compilation produced 62 assemblies, including Pipeline
+and URP, with no Alpha Compatibility assembly in the player output.
+
 ## Verification
 
 For a Git installation, add `com.martincalander.alphacompatibility` to the host
@@ -348,8 +379,8 @@ The source-fix suites report an explicit skip when their optional source fix is
 absent. A host being validated with those fixes must run them with zero skips.
 On a host with Pipeline and URP source fixes, run these assemblies:
 
-- `MartinCalander.AlphaCompatibility.Editor.Tests` (36 RenderGraph cases)
-- `MartinCalander.AlphaCompatibility.Editor.PipelineLifecycle.Tests` (8 cases)
+- `MartinCalander.AlphaCompatibility.Editor.Tests` (36 RenderGraph cases on Pipeline 0.9 only)
+- `MartinCalander.AlphaCompatibility.Editor.PipelineLifecycle.Tests` (8 lifecycle cases; Pipeline 0.10 adds 16 native RenderGraph cases)
 - `MartinCalander.AlphaCompatibility.Editor.UrpSource.Tests` (6 cases)
 - `MartinCalander.AlphaCompatibility.Editor.Aseprite.Tests` (2 cases, when Aseprite is installed)
 - `MartinCalander.AlphaCompatibility.Editor.PackageManager.Tests` (20 cases, native hook restricted to alpha 16)

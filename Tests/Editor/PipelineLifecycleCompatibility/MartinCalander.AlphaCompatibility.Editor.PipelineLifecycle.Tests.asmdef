@@ -2,7 +2,8 @@
   "name": "MartinCalander.AlphaCompatibility.Editor.PipelineLifecycle.Tests",
   "rootNamespace": "MartinCalander.AlphaCompatibility.Editor.Tests",
   "references": [
-    "Unity.Pipeline"
+    "Unity.Pipeline",
+    "Unity.Pipeline.Attributes"
   ],
   "includePlatforms": [
     "Editor"
@@ -13,13 +14,23 @@
   ],
   "autoReferenced": false,
   "defineConstraints": [
-    "ALPHA_COMPATIBILITY_PIPELINE_0_9"
+    "ALPHA_COMPATIBILITY_PIPELINE_0_9 || ALPHA_COMPATIBILITY_PIPELINE_0_10"
   ],
   "versionDefines": [
     {
       "name": "com.unity.pipeline",
       "expression": "[0.9.0-exp.1]",
       "define": "ALPHA_COMPATIBILITY_PIPELINE_0_9"
+    },
+    {
+      "name": "com.unity.pipeline",
+      "expression": "[0.10.0-exp.1]",
+      "define": "ALPHA_COMPATIBILITY_PIPELINE_0_10"
+    },
+    {
+      "name": "com.unity.render-pipelines.core",
+      "expression": "[17.7.0]",
+      "define": "ALPHA_COMPATIBILITY_SRP_CORE_17_7"
     }
   ],
   "optionalUnityReferences": [
